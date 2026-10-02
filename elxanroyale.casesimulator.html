@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS:GO Case Opener & 1v1 Battles</title>
+    <style>
+        :root {
+            --bg-main: #0f111a;
+            --bg-card: #181b28;
+            --bg-hover: #222638;
+            --accent: #ffb703;
+            --accent-green: #22c55e;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            
+            --common: #4b69ff;
+            --restricted: #8847ff;
+            --classified: #d32ce6;
+            --covert: #eb4b4b;
+            --gold: #ffd700;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #131520;
+            border-bottom: 1px solid #232738;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #2a2f45;
+            font-size: 15px;
+        }
+
+        .stat-box span {
+            font-weight: bold;
+            color: #4ade80;
+            font-size: 18px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            background: #131520;
+            padding: 12px;
+            border-bottom: 1px solid #232738;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: var(--bg-hover);
+        }
+
+        .tab-btn.active {
+            color: var(--bg-main);
+            background: var(--accent);
+        }
+
+        main {
+            flex: 1;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Spinner & Cases Styles */
+        .spinner-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #2a2f45;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .multi-tracks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .roulette-wrapper {
+            position: relative;
+            width: 100%;
+            height: 110px;
+            background: #0d0f17;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #2a2f45;
+        }
+
+        .pointer {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            z-index: 10;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .pointer::before, .pointer::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+        }
+
+        .pointer::before { top: 0; border-top: 10px solid var(--accent); }
+        .pointer::after { bottom: 0; border-bottom: 10px solid var(--accent); }
+
+        .roulette-track {
+            display: flex;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            will-change: transform;
+        }
+
+        .count-selector {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .count-btn {
+            background: #11131f;
+            border: 2px solid #2a2f45;
+            color: var(--text-muted);
+            padding: 8px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .count-btn.active {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--bg-hover);
+        }
+
+        .weapon-card {
+            min-width: 120px;
+            max-width: 120px;
+            height: 100%;
+            background: #151824;
+            border-right: 2px solid #0d0f17;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            position: relative;
+            text-align: center;
+        }
+
+        .weapon-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 4px;
+        }
+
+        .weapon-card.common::after { background: var(--common); }
+        .weapon-card.restricted::after { background: var(--restricted); }
+        .weapon-card.classified::after { background: var(--classified); }
+        .weapon-card.covert::after { background: var(--covert); }
+        .weapon-card.gold::after { background: var(--gold); }
+
+        .weapon-type { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .weapon-name { font-size: 12px; font-weight: 700; margin: 4px 0; color: var(--text-main); word-break: break-word; }
+        .weapon-val { font-size: 11px; color: #4ade80; font-weight: 600; }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255, 183, 3, 0.4); }
+        .btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn-green { background: var(--accent-green); color: white; }
+        .btn-green:hover { box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .case-card {
+            background: var(--bg-card);
+            border: 2px solid #2a2f45;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .case-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+        .case-card.selected {
+            border-color: var(--accent);
+            background: var(--bg-hover);
+            box-shadow: 0 0 15px rgba(255, 183, 3, 0.2);
+        }
+
+        .case-title { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+        .case-price { font-size: 22px; font-weight: 800; color: #4ade80; margin-bottom: 12px; }
+        .case-range { font-size: 12px; color: var(--text-muted); background: #11131f; padding: 6px; border-radius: 4px; }
+
+        /* Inventory Grid */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .inv-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #2a2f45;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .inv-card-tag { height: 4px; width: 100%; border-radius: 2px; margin-bottom: 8px; }
+        .inv-card-name { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+        .inv-card-rarity { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+        .inv-card-val { font-size: 14px; font-weight: 700; color: #4ade80; margin-bottom: 10px; }
+
+        .sm-btn {
+            background: #2a2f45;
+            color: var(--text-main);
+            border: none;
+            padding: 6px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+        }
+        .sm-btn:hover { background: #3b4261; }
+
+        /* 1v1 BATTLES SECTION */
+        .battles-header-info {
+            margin-bottom: 25px;
+        }
+
+        .battles-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .battles-sub {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .create-room-card {
+            background: var(--bg-card);
+            border: 1px solid #2a2f45;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .create-room-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: var(--text-main);
+        }
+
+        .create-room-controls {
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .select-input {
+            background: #11131f;
+            border: 1px solid #2a2f45;
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+            cursor: pointer;
+            min-width: 180px;
+        }
+
+        .select-input:focus {
+            border-color: var(--accent);
+        }
+
+        .entry-fee-display {
+            font-size: 20px;
+            font-weight: 800;
+            color: #4ade80;
+            padding: 10px 0;
+        }
+
+        .btn-create-room {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-create-room:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+        }
+
+        .selected-cases-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #2a2f45;
+        }
+
+        .selected-case-tag {
+            background: #11131f;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .selected-case-tag span {
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .rooms-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .room-item {
+            background: var(--bg-card);
+            border: 1px solid #2a2f45;
+            border-radius: 10px;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .room-item:hover {
+            border-color: #3b4261;
+        }
+
+        .room-creator {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 15px;
+        }
+
+        .room-cases-summary {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .room-entry-price {
+            font-size: 18px;
+            font-weight: 800;
+            color: #4ade80;
+        }
+
+        /* Active Battle Arena */
+        .battle-arena {
+            background: var(--bg-card);
+            border: 1px solid #2a2f45;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+            display: none;
+        }
+
+        .battle-players-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .player-box {
+            background: #11131f;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #2a2f45;
+        }
+
+        .player-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .player-score {
+            font-size: 22px;
+            font-weight: 800;
+            color: #4ade80;
+        }
+
+        .battle-round-info {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .battle-tracks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Admin & Bank Section */
+        .admin-auth-card {
+            background: var(--bg-card);
+            border: 1px solid #2a2f45;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 450px;
+            margin: 40px auto;
+            text-align: center;
+        }
+
+        .admin-auth-card h3 { font-size: 20px; color: var(--accent); margin-bottom: 12px; }
+
+        .bank-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .bank-card {
+            background: var(--bg-card);
+            border: 1px solid #2a2f45;
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bank-card h3 { font-size: 18px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+
+        .quick-deposit-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .deposit-btn {
+            background: #192238;
+            border: 1px solid #3b4261;
+            color: #4ade80;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .deposit-btn:hover { background: var(--accent-green); color: white; border-color: var(--accent-green); transform: translateY(-2px); }
+
+        .input-group { display: flex; gap: 10px; }
+
+        .bank-input {
+            background: #11131f;
+            border: 1px solid #2a2f45;
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 15px;
+            flex: 1;
+            outline: none;
+        }
+        .bank-input:focus { border-color: var(--accent); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-card {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 650px;
+            width: 92%;
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 30px rgba(255, 183, 3, 0.3);
+            animation: popIn 0.3s ease-out;
+        }
+
+        .win-items-grid {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .win-item-card {
+            background: #11131f;
+            border: 1px solid #2a2f45;
+            border-radius: 8px;
+            padding: 12px;
+            width: 140px;
+            text-align: center;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .win-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .win-total-val { font-size: 24px; font-weight: 800; color: #4ade80; margin-bottom: 15px; }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent-green);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            display: none;
+            z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span>📦 CASECLASH</span>
+        </div>
+        <div class="stats-bar">
+            <div class="stat-box">Balans: <span id="balance-display">$500.00</span></div>
+        </div>
+    </header>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('cases', event)">📦 Cases</button>
+        <button class="tab-btn" onclick="switchTab('inventory', event)">🎒 Inventory (<span id="inv-count">0</span>)</button>
+        <button class="tab-btn" onclick="switchTab('battles', event)">⚔️ Battles (1v1)</button>
+        <button class="tab-btn" onclick="switchTab('admin', event)">🔒 Admin Panel</button>
+    </div>
+
+    <main>
+        <!-- CASES TAB -->
+        <section id="cases-tab" class="view-section active">
+            <div class="spinner-container">
+                <h2 id="selected-case-title">Qutu Seçin</h2>
+                <p id="selected-case-sub" style="color: var(--text-muted); margin-bottom: 15px;">Açmaq üçün aşağıdakı siyahıdan bir qutu seçin.</p>
+                
+                <div class="count-selector">
+                    <button class="count-btn active" onclick="selectCaseCount(1, event)">1x Qutu</button>
+                    <button class="count-btn" onclick="selectCaseCount(3, event)">3x Qutu</button>
+                    <button class="count-btn" onclick="selectCaseCount(5, event)">5x Qutu</button>
+                </div>
+
+                <div class="multi-tracks-container" id="multi-tracks-container"></div>
+
+                <button class="btn" id="open-btn" onclick="openCase()" disabled>Qutunu Aç ($0.00)</button>
+            </div>
+
+            <div class="section-title"><span>Mövcud Qutular</span></div>
+            <div class="cases-grid" id="cases-grid"></div>
+        </section>
+
+        <!-- INVENTORY TAB -->
+        <section id="inventory-tab" class="view-section">
+            <div class="section-title">
+                <span>Mənim Envanterim</span>
+                <button class="btn btn-danger" style="padding: 8px 16px; font-size: 14px;" onclick="sellAll()">Hamısını Sat</button>
+            </div>
+            <div class="inventory-grid" id="inventory-grid"></div>
+        </section>
+
+        <!-- 1v1 BATTLES TAB -->
+        <section id="battles-tab" class="view-section">
+            <div class="battles-header-info">
+                <div class="battles-title">1v1 Battles</div>
+                <div class="battles-sub">Hər iki oyunçu eyni qutuları açır. Ən çox ümumi dəyər toplayan qalib gəlir və bütün skinləri götürür!</div>
+            </div>
+
+            <!-- CREATE ROOM CARD -->
+            <div class="create-room-card">
+                <div class="create-room-title">Otaq yarat</div>
+                <div class="create-room-controls">
+                    <div class="control-group">
+                        <label>Case Seçin</label>
+                        <select id="battle-case-select" class="select-input"></select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Neçə ədəd açılacaq?</label>
+                        <select id="battle-count-select" class="select-input">
+                            <option value="1">1 ədəd</option>
+                            <option value="2">2 ədəd</option>
+                            <option value="3">3 ədəd</option>
+                            <option value="5" selected>5 ədəd</option>
+                            <option value="10">10 ədəd</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-green" onclick="addCaseToRoomSequence()" style="padding: 12px 20px;">+ Qutunu Əlavə Et</button>
+
+                    <div class="control-group" style="margin-left: auto;">
+                        <label>Entry Fee (Giriş Haqqı)</label>
+                        <div class="entry-fee-display" id="battle-entry-fee">$0.00</div>
+                    </div>
+
+                    <button class="btn-create-room" onclick="publishBattleRoom()">Otaq Yarat</button>
+                </div>
+
+                <!-- Sequence of selected cases -->
+                <div class="selected-cases-bar" id="selected-cases-bar">
+                    <div style="color: var(--text-muted); font-size: 13px;">Siyahıya hələ qutu əlavə olunmayıb. Yuxarıdan seçib "+ Qutunu Əlavə Et" sıxın.</div>
+                </div>
+            </div>
+
+            <!-- LOBBY / OPEN ROOMS -->
+            <div class="section-title">
+                <span>Açıq Otaqlar (Döyüş Lobby)</span>
+                <button class="btn btn-green" style="padding: 6px 14px; font-size: 13px;" onclick="renderLobbyRooms()">🔄 Yenilə</button>
+            </div>
+            <div class="rooms-list" id="rooms-list-container">
+                <!-- Dynamically filled rooms -->
+            </div>
+
+            <!-- ACTIVE BATTLE ARENA -->
+            <div class="battle-arena" id="battle-arena">
+                <div class="battle-players-header">
+                    <div class="player-box">
+                        <div class="player-name" id="p1-display-name">👤 Player 1</div>
+                        <div class="player-score" id="p1-score">$0.00</div>
+                    </div>
+                    <div class="player-box">
+                        <div class="player-name" id="p2-display-name">👤 Player 2 (Siz)</div>
+                        <div class="player-score" id="p2-score">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="battle-round-info" id="battle-round-disp">Raund: 1/1</div>
+
+                <div class="battle-tracks-grid">
+                    <div id="p1-battle-tracks"></div>
+                    <div id="p2-battle-tracks"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ADMIN PANEL TAB -->
+        <section id="admin-tab" class="view-section">
+            <div id="admin-login-view" class="admin-auth-card">
+                <h3>🔒 Admin Girişi</h3>
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Balans artırmaq yalnız oyun sahibi (admin) üçün icazəlidir. Lütfən PIN kodu daxil edin:</p>
+                <div class="input-group" style="margin-bottom: 15px;">
+                    <input type="password" id="admin-pin-input" class="bank-input" placeholder="PIN Kod (Standart: 1234)">
+                    <button class="btn btn-green" onclick="verifyAdminPIN()" style="padding: 10px 20px; font-size: 14px;">Daxil Ol</button>
+                </div>
+            </div>
+
+            <div id="admin-dashboard-view" style="display: none;">
+                <div class="section-title">
+                    <span>👑 Admin İdarəetmə Paneli (Xüsusi Giriş)</span>
+                    <button class="btn btn-danger" onclick="lockAdmin()" style="padding: 8px 16px; font-size: 13px;">🔒 Çıxış Et</button>
+                </div>
+
+                <div class="bank-grid">
+                    <div class="bank-card">
+                        <h3>⚡ Oyunçunun Balansını Artır</h3>
+                        <p style="color: var(--text-muted); font-size: 13px;">İstənilən məbləği seçib dərhal balansa əlavə edin:</p>
+                        <div class="quick-deposit-grid">
+                            <button class="deposit-btn" onclick="addCustomFunds(50)">+$50</button>
+                            <button class="deposit-btn" onclick="addCustomFunds(100)">+$100</button>
+                            <button class="deposit-btn" onclick="addCustomFunds(500)">+$500</button>
+                            <button class="deposit-btn" onclick="addCustomFunds(1000)">+$1000</button>
+                        </div>
+
+                        <div style="margin-top: 10px;">
+                            <label style="font-size: 13px; color: var(--text-muted); display: block; margin-bottom: 6px;">Xüsusi Məbləğ ($):</label>
+                            <div class="input-group">
+                                <input type="number" id="custom-amount-input" class="bank-input" placeholder="Məs: 250" min="1">
+                                <button class="btn btn-green" onclick="addInputFunds()" style="padding: 10px 20px; font-size: 14px;">Əlavə Et</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bank-card">
+                        <h3>🔑 Admin PIN Kodunu Dəyiş</h3>
+                        <p style="color: var(--text-muted); font-size: 13px;">Dostlarınızın daxil ola bilməməsi üçün öz xüsusi şifrənizi təyin edin:</p>
+                        <div class="input-group">
+                            <input type="password" id="new-pin-input" class="bank-input" placeholder="Yeni PIN kod">
+                            <button class="btn" onclick="changeAdminPIN()" style="padding: 10px 20px; font-size: 14px;">Yadda Saxla</button>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Cari PIN: <b id="current-pin-disp">1234</b></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- WIN MODAL -->
+    <div class="modal-overlay" id="win-modal">
+        <div class="modal-card">
+            <div class="win-title" id="win-modal-title">Təbrik Edirik! Mükafatlarınız:</div>
+            <div class="win-items-grid" id="modal-items-grid"></div>
+            <div class="win-total-val" id="modal-total-val">Cəmi Dəyər: $0.00</div>
+            <button class="btn" onclick="closeModal()">Envanterə Əlavə Et</button>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast-msg"></div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playWin() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const now = audioCtx.currentTime;
+            const freqs = [329.63, 392.00, 493.88, 659.25];
+            freqs.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + i * 0.06);
+                gain.gain.setValueAtTime(0.15, now + i * 0.06);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.35);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + i * 0.06);
+                osc.stop(now + i * 0.06 + 0.35);
+            });
+        }
+
+        let balance = 500.00;
+        let inventory = [];
+        let selectedCase = null;
+        let selectedCount = 1;
+        let isSpinning = false;
+        
+        let adminPIN = "1234";
+        let isAdminUnlocked = false;
+
+        let roomCaseSequence = []; 
+
+        function getPublishedRooms() {
+            const data = localStorage.getItem('caseclash_rooms');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function savePublishedRooms(rooms) {
+            localStorage.setItem('caseclash_rooms', JSON.stringify(rooms));
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'caseclash_rooms') {
+                renderLobbyRooms();
+            }
+        });
+
+        const RARITIES = {
+            COMMON: { name: 'Mil-Spec', color: 'var(--common)', class: 'common' },
+            RESTRICTED: { name: 'Restricted', color: 'var(--restricted)', class: 'restricted' },
+            CLASSIFIED: { name: 'Classified', color: 'var(--classified)', class: 'classified' },
+            COVERT: { name: 'Covert', color: 'var(--covert)', class: 'covert' },
+            GOLD: { name: 'Exceedingly Rare', color: 'var(--gold)', class: 'gold' }
+        };
+
+        const WEAPON_NAMES = {
+            COMMON: ['P250 | Sand Dune', 'P90 | Sand Spray', 'MP7 | Forest DDPAT'],
+            RESTRICTED: ['AK-47 | Safari Mesh', 'M4A4 | Magma', 'AWP | Acheron'],
+            CLASSIFIED: ['AK-47 | Redline', 'M4A1-S | Decimator', 'AWP | Electric Hive'],
+            COVERT: ['AK-47 | Fire Serpent', 'M4A4 | Howl', 'AWP | Dragon Lore'],
+            GOLD: ['Karambit | Fade', 'M9 Bayonet | Doppler', 'Butterfly Knife | Tiger Tooth']
+        };
+
+        const CASES = [
+            { id: 'c1', name: 'Starter Crate', price: 1, min: 0.10, max: 30 },
+            { id: 'c3', name: 'Alley Case', price: 3, min: 0.25, max: 90 },
+            { id: 'c5', name: 'Dust Runner', price: 5, min: 0.40, max: 150 },
+            { id: 'c10', name: 'Nuke Vault', price: 10, min: 0.80, max: 300 },
+            { id: 'c20', name: 'Mirage Cache', price: 20, min: 1.50, max: 600 },
+            { id: 'c35', name: 'Inferno Reserve', price: 35, min: 3.00, max: 1050 },
+            { id: 'c50', name: 'Overpass Elite', price: 50, min: 4.00, max: 1500 },
+            { id: 'c75', name: 'Ancient Relic', price: 75, min: 6.00, max: 2200 },
+            { id: 'c100', name: 'Train Yard Prime', price: 100, min: 8.00, max: 20000 },
+            { id: 'c150', name: 'Vertigo Apex', price: 150, min: 10.00, max: 30000 },
+            { id: 'c250', name: 'Cobblestone Legacy', price: 250, min: 20.00, max: 45000 },
+            { id: 'c350', name: 'Knife Vault', price: 350, min: 30.00, max: 75000 },
+            { id: 'c500', name: 'Black Market', price: 500, min: 50.00, max: 100000 }
+        ];
+
+        function init() {
+            renderCases();
+            populateBattleCasesDropdown();
+            updateUI();
+            renderMultiTracks();
+            renderLobbyRooms();
+            setInterval(renderLobbyRooms, 2000);
+        }
+
+        function updateUI() {
+            document.getElementById('balance-display').innerText = '$' + balance.toFixed(2);
+            document.getElementById('inv-count').innerText = inventory.length;
+            updateOpenButton();
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function switchTab(tab, evt) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            
+            if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+
+            if (tab === 'inventory') renderInventory();
+            if (tab === 'battles') renderLobbyRooms();
+        }
+
+        function selectCaseCount(count, evt) {
+            if (isSpinning) return;
+            selectedCount = count;
+            document.querySelectorAll('.count-btn').forEach(btn => btn.classList.remove('active'));
+            if (evt && evt.target) evt.target.classList.add('active');
+            renderMultiTracks();
+            updateOpenButton();
+        }
+
+        function updateOpenButton() {
+            const btn = document.getElementById('open-btn');
+            if (!selectedCase) {
+                btn.innerText = 'Qutunu Aç ($0.00)';
+                btn.disabled = true;
+                return;
+            }
+            const totalCost = selectedCase.price * selectedCount;
+            btn.innerText = `${selectedCount}x Qutunu Aç ($${totalCost.toFixed(2)})`;
+            btn.disabled = balance < totalCost || isSpinning;
+        }
+
+        function populateBattleCasesDropdown() {
+            const select = document.getElementById('battle-case-select');
+            select.innerHTML = '';
+            CASES.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.innerText = `${c.name} — $${c.price}`;
+                if (c.id === 'c10') opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function addCaseToRoomSequence() {
+            const caseId = document.getElementById('battle-case-select').value;
+            const count = parseInt(document.getElementById('battle-count-select').value);
+            const caseData = CASES.find(c => c.id === caseId);
+
+            for (let i = 0; i < count; i++) {
+                roomCaseSequence.push(caseData);
+            }
+
+            renderRoomSequenceUI();
+        }
+
+        function removeCaseFromSequence(index) {
+            roomCaseSequence.splice(index, 1);
+            renderRoomSequenceUI();
+        }
+
+        function renderRoomSequenceUI() {
+            const container = document.getElementById('selected-cases-bar');
+            let totalEntry = 0;
+
+            if (roomCaseSequence.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); font-size: 13px;">Siyahıya hələ qutu əlavə olunmayıb. Yuxarıdan seçib "+ Qutunu Əlavə Et" sıxın.</div>';
+                document.getElementById('battle-entry-fee').innerText = '$0.00';
+                return;
+            }
+
+            container.innerHTML = '';
+            roomCaseSequence.forEach((c, idx) => {
+                totalEntry += c.price;
+                const tag = document.createElement('div');
+                tag.className = 'selected-case-tag';
+                tag.innerHTML = `
+                    ${c.name} ($${c.price})
+                    <span onclick="removeCaseFromSequence(${idx})">✕</span>
+                `;
+                container.appendChild(tag);
+            });
+
+            document.getElementById('battle-entry-fee').innerText = `$${totalEntry.toFixed(2)}`;
+        }
+
+        function publishBattleRoom() {
+            if (roomCaseSequence.length === 0) {
+                showToast('Lütfən döyüş üçün ən azı 1 qutu əlavə edin!');
+                return;
+            }
+
+            const totalEntry = roomCaseSequence.reduce((sum, c) => sum + c.price, 0);
+            if (balance < totalEntry) {
+                showToast('Kifayət qədər balansınız yoxdur!');
+                return;
+            }
+
+            balance -= totalEntry;
+            updateUI();
+
+            const rooms = getPublishedRooms();
+            const room = {
+                id: 'room_' + Date.now(),
+                creator: 'Oyunçu 1',
+                sequence: [...roomCaseSequence],
+                entryFee: totalEntry
+            };
+
+            rooms.push(room);
+            savePublishedRooms(rooms);
+
+            roomCaseSequence = [];
+            renderRoomSequenceUI();
+            renderLobbyRooms();
+
+            showToast('Otaq yaradıldı! Lobby-də görünür.');
+        }
+
+        function renderLobbyRooms() {
+            const container = document.getElementById('rooms-list-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const rooms = getPublishedRooms();
+
+            if (rooms.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px;">Hələ ki açıq otaq yoxdur. Yeni otaq yaradın!</div>';
+                return;
+            }
+
+            rooms.forEach((room) => {
+                const item = document.createElement('div');
+                item.className = 'room-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="room-creator">🎮 ${room.creator}</div>
+                        <div class="room-cases-summary">Qutular: ${room.sequence.length} ədəd (${room.sequence.map(c => c.name).join(', ')})</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div class="room-entry-price">$${room.entryFee.toFixed(2)}</div>
+                        <button class="btn btn-green" onclick="joinBattleRoom('${room.id}')">Daxil Ol və Oyna</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function joinBattleRoom(roomId) {
+            let rooms = getPublishedRooms();
+            const roomIdx = rooms.findIndex(r => r.id === roomId);
+            if (roomIdx === -1) {
+                showToast('Bu otaq artıq mövcud deyil və ya silinib!');
+                renderLobbyRooms();
+                return;
+            }
+
+            const room = rooms[roomIdx];
+            if (balance < room.entryFee) {
+                showToast('Otağa girmək üçün balansınız çatmir!');
+                return;
+            }
+
+            balance -= room.entryFee;
+            updateUI();
+
+            rooms.splice(roomIdx, 1);
+            savePublishedRooms(rooms);
+            renderLobbyRooms();
+
+            startLiveBattleArena(room);
+        }
+
+        function startLiveBattleArena(room) {
+            isSpinning = true;
+            const arena = document.getElementById('battle-arena');
+            arena.style.display = 'block';
+
+            document.getElementById('p1-display-name').innerText = `👤 ${room.creator} (Rəqib)`;
+            document.getElementById('p2-display-name').innerText = `👤 Siz (Oyunçu 2)`;
+
+            document.getElementById('p1-score').innerText = '$0.00';
+            document.getElementById('p2-score').innerText = '$0.00';
+
+            let p1Total = 0;
+            let p2Total = 0;
+
+            const p1Wins = [];
+            const p2Wins = [];
+
+            let currentRound = 0;
+            const totalRounds = room.sequence.length;
+
+            function processNextRound() {
+                if (currentRound >= totalRounds) {
+                    setTimeout(() => {
+                        isSpinning = false;
+                        if (p2Total >= p1Total) {
+                            const allLoot = [...p1Wins, ...p2Wins];
+                            allLoot.forEach(item => inventory.push(item));
+                            updateUI();
+                            playWin();
+                            showWinModal(allLoot, `🏆 DÖYÜŞÜ QAZANDINIZ! (+$${(p1Total + p2Total).toFixed(2)})`);
+                        } else {
+                            showWinModal([], `❌ RƏQİB QAZANDI! ($${p1Total.toFixed(2)} vs $${p2Total.toFixed(2)})`);
+                        }
+                    }, 800);
+                    return;
+                }
+
+                currentRound++;
+                document.getElementById('battle-round-disp').innerText = `Raund: ${currentRound} / ${totalRounds} — (${room.sequence[currentRound-1].name})`;
+
+                const p1Container = document.getElementById('p1-battle-tracks');
+                const p2Container = document.getElementById('p2-battle-tracks');
+                p1Container.innerHTML = createBattleTrackHTML(`p1-round-${currentRound}`);
+                p2Container.innerHTML = createBattleTrackHTML(`p2-round-${currentRound}`);
+
+                const currentCase = room.sequence[currentRound - 1];
+                const w1 = generateRandomWeapon(currentCase);
+                const w2 = generateRandomWeapon(currentCase);
+
+                p1Wins.push(w1);
+                p2Wins.push(w2);
+
+                p1Total += w1.value;
+                p2Total += w2.value;
+
+                animateSingleTrack(`p1-round-${currentRound}`, w1, 3);
+                animateSingleTrack(`p2-round-${currentRound}`, w2, 3);
+
+                setTimeout(() => {
+                    document.getElementById('p1-score').innerText = `$${p1Total.toFixed(2)}`;
+                    document.getElementById('p2-score').innerText = `$${p2Total.toFixed(2)}`;
+
+                    setTimeout(processNextRound, 1000);
+                }, 3200);
+            }
+
+            processNextRound();
+        }
+
+        function createBattleTrackHTML(id) {
+            return `
+                <div class="roulette-wrapper">
+                    <div class="pointer"></div>
+                    <div class="roulette-track" id="${id}"></div>
+                </div>
+            `;
+        }
+
+        function animateSingleTrack(trackId, winItem, durationSec = 3) {
+            const track = document.getElementById(trackId);
+            if (!track) return;
+            const dummyCase = CASES[0];
+            const cardWidth = 120;
+            const wrapperWidth = track.parentElement.offsetWidth;
+
+            const items = [];
+            for (let i = 0; i < 40; i++) {
+                if (i === 30) items.push(winItem);
+                else items.push(generateRandomWeapon(dummyCase));
+            }
+
+            track.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `weapon-card ${item.rarity.class}`;
+                card.innerHTML = `
+                    <div class="weapon-type">${item.rarity.name}</div>
+                    <div class="weapon-name">${item.name}</div>
+                    <div class="weapon-val">$${item.value.toFixed(2)}</div>
+                `;
+                track.appendChild(card);
+            });
+
+            const offset = -(30 * cardWidth - (wrapperWidth / 2) + (cardWidth / 2)) + (Math.random() * 30 - 15);
+            track.style.transition = `transform ${durationSec}s cubic-bezier(0.1, 1, 0.1, 1)`;
+            track.style.transform = `translateX(${offset}px)`;
+        }
+
+        function verifyAdminPIN() {
+            const input = document.getElementById('admin-pin-input');
+            if (input.value === adminPIN) {
+                isAdminUnlocked = true;
+                document.getElementById('admin-login-view').style.display = 'none';
+                document.getElementById('admin-dashboard-view').style.display = 'block';
+                document.getElementById('current-pin-disp').innerText = adminPIN;
+                input.value = '';
+                showToast('Admin girişi uğurla tamamlandı!');
+            } else { showToast('Yanlış PIN kod!'); }
+        }
+
+        function lockAdmin() {
+            isAdminUnlocked = false;
+            document.getElementById('admin-login-view').style.display = 'block';
+            document.getElementById('admin-dashboard-view').style.display = 'none';
+        }
+
+        function changeAdminPIN() {
+            const newPin = document.getElementById('new-pin-input').value.trim();
+            if (newPin && newPin.length >= 4) {
+                adminPIN = newPin;
+                document.getElementById('current-pin-disp').innerText = adminPIN;
+                document.getElementById('new-pin-input').value = '';
+                showToast(`PIN kod dəyişdirildi: ${adminPIN}`);
+            }
+        }
+
+        function addCustomFunds(amount) {
+            if (!isAdminUnlocked) return;
+            balance += amount;
+            updateUI();
+            showToast(`Balansa +$${amount.toFixed(2)} əlavə olundu!`);
+        }
+
+        function addInputFunds() {
+            if (!isAdminUnlocked) return;
+            const input = document.getElementById('custom-amount-input');
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) {
+                addCustomFunds(val);
+                input.value = '';
+            }
+        }
+
+        function renderCases() {
+            const grid = document.getElementById('cases-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            CASES.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'case-card';
+                card.id = 'case-card-' + c.id;
+                card.onclick = () => selectCase(c);
+                card.innerHTML = `
+                    <div class="case-title">${c.name}</div>
+                    <div class="case-price">$${c.price.toFixed(2)}</div>
+                    <div class="case-range">Mükafat: $${c.min} - $${c.max}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectCase(c) {
+            if (isSpinning) return;
+            selectedCase = c;
+            document.querySelectorAll('.case-card').forEach(el => el.classList.remove('selected'));
+            const cardEl = document.getElementById('case-card-' + c.id);
+            if (cardEl) cardEl.classList.add('selected');
+
+            document.getElementById('selected-case-title').innerText = `${c.name} (${selectedCount}x)`;
+            document.getElementById('selected-case-sub').innerText = `Mükafat Aralığı: $${c.min} - $${c.max}`;
+            
+            renderMultiTracks();
+            updateOpenButton();
+        }
+
+        function generateRandomWeapon(c) {
+            const rand = Math.random();
+            let key = 'COMMON';
+
+            if (rand < 0.005) key = 'GOLD';
+            else if (rand < 0.035) key = 'COVERT';
+            else if (rand < 0.12) key = 'CLASSIFIED';
+            else if (rand < 0.30) key = 'RESTRICTED';
+
+            const rarity = RARITIES[key];
+            const names = WEAPON_NAMES[key];
+            const name = names[Math.floor(Math.random() * names.length)];
+
+            let value = c.min + Math.random() * (c.price * 2 - c.min);
+            if (key === 'GOLD') value = c.price * 15 + Math.random() * (c.max - c.price * 15);
+
+            value = Math.max(c.min, Math.min(c.max, value));
+
+            return {
+                id: 'w_' + Date.now() + '_' + Math.floor(Math.random() * 1000000),
+                name: name,
+                rarityKey: key,
+                rarity: rarity,
+                value: parseFloat(value.toFixed(2))
+            };
+        }
+
+        function renderMultiTracks() {
+            const container = document.getElementById('multi-tracks-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const dummyCase = selectedCase || CASES[0];
+
+            for (let t = 0; t < selectedCount; t++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'roulette-wrapper';
+                wrapper.innerHTML = `
+                    <div class="pointer"></div>
+                    <div class="roulette-track" id="roulette-track-${t}"></div>
+                `;
+                container.appendChild(wrapper);
+
+                const track = wrapper.querySelector('.roulette-track');
+                for (let i = 0; i < 60; i++) {
+                    const item = generateRandomWeapon(dummyCase);
+                    const card = document.createElement('div');
+                    card.className = `weapon-card ${item.rarity.class}`;
+                    card.innerHTML = `
+                        <div class="weapon-type">${item.rarity.name}</div>
+                        <div class="weapon-name">${item.name}</div>
+                        <div class="weapon-val">$${item.value.toFixed(2)}</div>
+                    `;
+                    track.appendChild(card);
+                }
+            }
+        }
+
+        function openCase() {
+            if (!selectedCase) return;
+            const totalCost = selectedCase.price * selectedCount;
+            if (balance < totalCost || isSpinning) return;
+
+            balance -= totalCost;
+            updateUI();
+            isSpinning = true;
+
+            const wonItems = [];
+            const trackOffsets = [];
+            const cardWidth = 120;
+            const wrapperElem = document.querySelector('.roulette-wrapper');
+            if (!wrapperElem) return;
+            const wrapperWidth = wrapperElem.offsetWidth;
+
+            for (let t = 0; t < selectedCount; t++) {
+                const track = document.getElementById(`roulette-track-${t}`);
+                if (!track) continue;
+                track.style.transition = 'none';
+                track.style.transform = 'translateX(0px)';
+                track.innerHTML = '';
+
+                const items = [];
+                for (let i = 0; i < 60; i++) {
+                    items.push(generateRandomWeapon(selectedCase));
+                }
+
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = `weapon-card ${item.rarity.class}`;
+                    card.innerHTML = `
+                        <div class="weapon-type">${item.rarity.name}</div>
+                        <div class="weapon-name">${item.name}</div>
+                        <div class="weapon-val">$${item.value.toFixed(2)}</div>
+                    `;
+                    track.appendChild(card);
+                });
+
+                wonItems.push(items[45]);
+                const offset = -(45 * cardWidth - (wrapperWidth / 2) + (cardWidth / 2)) + (Math.random() * 50 - 25);
+                trackOffsets.push(offset);
+            }
+
+            setTimeout(() => {
+                for (let t = 0; t < selectedCount; t++) {
+                    const track = document.getElementById(`roulette-track-${t}`);
+                    if (!track) continue;
+                    track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
+                    track.style.transform = `translateX(${trackOffsets[t]}px)`;
+                }
+
+                setTimeout(() => {
+                    wonItems.forEach(item => inventory.push(item));
+                    updateUI();
+                    playWin();
+                    showWinModal(wonItems);
+                    isSpinning = false;
+                    updateOpenButton();
+                }, 5200);
+            }, 50);
+        }
+
+        function showWinModal(items, customTitle = null) {
+            const grid = document.getElementById('modal-items-grid');
+            grid.innerHTML = '';
+            document.getElementById('win-modal-title').innerText = customTitle || 'Təbrik Edirik! Mükafatlarınız:';
+
+            let totalVal = 0;
+
+            if (items.length === 0) {
+                grid.innerHTML = '<div style="color: #ef4444; font-size: 16px; font-weight: bold;">Bu döyüşdə bütün eşyaları rəqib apardı!</div>';
+            } else {
+                items.forEach(item => {
+                    totalVal += item.value;
+                    const card = document.createElement('div');
+                    card.className = 'win-item-card';
+                    card.style.borderColor = item.rarity.color;
+                    card.innerHTML = `
+                        <div style="font-size: 10px; color: ${item.rarity.color}; font-weight: bold;">${item.rarity.name}</div>
+                        <div style="font-size: 12px; font-weight: bold; margin: 6px 0;">${item.name}</div>
+                        <div style="font-size: 13px; color: #4ade80; font-weight: 800;">$${item.value.toFixed(2)}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+
+            document.getElementById('modal-total-val').innerText = `Cəmi Mükafat Dəyəri: $${totalVal.toFixed(2)}`;
+            document.getElementById('win-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('win-modal').classList.remove('active');
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            if (inventory.length === 0) {
+                grid.innerHTML = '<div style="color: var(--text-muted); padding: 40px; grid-column: 1/-1; text-align: center;">Envanteriniz boşdur.</div>';
+                return;
+            }
+
+            inventory.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = `inv-card`;
+                card.innerHTML = `
+                    <div>
+                        <div class="inv-card-tag" style="background: ${item.rarity.color}"></div>
+                        <div class="inv-card-name">${item.name}</div>
+                        <div class="inv-card-rarity">${item.rarity.name}</div>
+                    </div>
+                    <div>
+                        <div class="inv-card-val">$${item.value.toFixed(2)}</div>
+                        <button class="sm-btn" onclick="sellItem('${item.id}')">Sat</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function sellItem(id) {
+            const idx = inventory.findIndex(i => i.id === id);
+            if (idx !== -1) {
+                balance += inventory[idx].value;
+                inventory.splice(idx, 1);
+                updateUI();
+                renderInventory();
+            }
+        }
+
+        function sellAll() {
+            if (inventory.length === 0) return;
+            const total = inventory.reduce((acc, curr) => acc + curr.value, 0);
+            balance += total;
+            inventory = [];
+            updateUI();
+            renderInventory();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
